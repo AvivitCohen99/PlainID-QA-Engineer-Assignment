@@ -38,7 +38,6 @@ async function depositAndWithdraw(url, depositSum, withdrawSum) {
     await page.waitForSelector('button[ng-click="transactions()"]');
     await page.click('button[ng-click="transactions()"]');
     await page.waitForNavigation({ waitUntil: "networkidle2" });
-    // await page.waitForFunction(() => window.location.href.includes("#/listTx"));
     if (await isTransactionTableUpdated(page, 0)) {
       fs.appendFileSync("log.txt", "The transactions table is empty\n");
     } else {
@@ -51,26 +50,14 @@ async function depositAndWithdraw(url, depositSum, withdrawSum) {
     // Deposit
     await page.waitForSelector('button[ng-click="deposit()"]');
     await page.click('button[ng-click="deposit()"]');
-    await page.waitForSelector('input[ng-model="amount"]', { visible: true });
-    await page.type('input[ng-model="amount"]', depositSum);
-    await page.waitForSelector("button.btn.btn-default");
-    await page.click("button.btn.btn-default");
-    await page.waitForSelector("span.error.ng-binding");
-    fs.appendFileSync("log.txt", `Deposit ${depositSum} successfully\n`);
+    await waitForTabAndFill(page, "Deposit", depositSum);
 
     // Withdraw
     await page.waitForSelector('button[ng-click="withdrawl()"]');
     await page.click('button[ng-click="withdrawl()"]');
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    await page.waitForSelector('input[ng-model="amount"]', { visible: true });
-    await page.type('input[ng-model="amount"]', withdrawSum);
-    await page.waitForSelector("button.btn.btn-default");
-    await page.click("button.btn.btn-default");
-    await page.waitForSelector("span.error.ng-binding");
-    fs.appendFileSync("log.txt", `Withdraw ${withdrawSum} successfully\n`);
+    await waitForTabAndFill(page, "Withdraw", withdrawSum);
 
     // Check ‘Transactions’ table
-    await new Promise((resolve) => setTimeout(resolve, 5000));
     await page.waitForSelector('button[ng-click="transactions()"]');
     await page.click('button[ng-click="transactions()"]');
     await page.waitForFunction(() => window.location.href.includes("#/listTx"));
@@ -92,6 +79,28 @@ async function depositAndWithdraw(url, depositSum, withdrawSum) {
   } finally {
     // Close the browser
     await browser.close();
+  }
+
+  async function waitForTabAndFill(page, text, sum) {
+    const selector = 'button[type="submit"]';
+    await page.waitForFunction(
+      (sel, text) => {
+        const el = document.querySelector(sel);
+        console.log(el && el.textContent.trim());
+        console.log(text);
+        return el && el.textContent.trim() === text;
+      },
+      {},
+      selector,
+      text
+    );
+    await page.waitForSelector('input[ng-model="amount"]', { visible: true });
+    await page.type('input[ng-model="amount"]', sum);
+    await page.waitForSelector("button.btn.btn-default");
+    await page.click("button.btn.btn-default");
+    await page.waitForSelector("span.error.ng-binding");
+    fs.appendFileSync("log.txt", `${text} ${sum} successfully\n`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 
