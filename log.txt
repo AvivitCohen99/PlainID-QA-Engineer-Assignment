@@ -1,4 +1,0 @@
-The transactions table is empty
-Deposit 200 successfully
-Withdraw 100 successfully
-All transactions are recorded successfully

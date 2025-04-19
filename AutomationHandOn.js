@@ -69,8 +69,8 @@ async function depositAndWithdraw(url, depositSum, withdrawSum) {
     await page.waitForSelector("span.error.ng-binding");
     fs.appendFileSync("log.txt", `Withdraw ${withdrawSum} successfully\n`);
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
     // Check ‘Transactions’ table
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     await page.waitForSelector('button[ng-click="transactions()"]');
     await page.click('button[ng-click="transactions()"]');
     await page.waitForFunction(() => window.location.href.includes("#/listTx"));
@@ -86,6 +86,7 @@ async function depositAndWithdraw(url, depositSum, withdrawSum) {
         "Transactions are not recorded successfully\n"
       );
     }
+    await page.screenshot({ path: "transactions.png" });
   } catch (err) {
     console.log(err);
   } finally {
